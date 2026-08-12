@@ -1,0 +1,224 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}EduTest AI – Quiz{% endblock %}
+{% block nav_quiz %}active{% endblock %}
+
+{% block content %}
+{% csrf_token %}
+<div class="quiz-page">
+  <!-- Quiz Header -->
+  <div class="quiz-header-section">
+    <div class="quiz-header-content">
+      <h1>Interactive <span class="gradient-text">Quizzes</span></h1>
+      <p>Reinforce your software testing knowledge with AI-generated questions tailored to your level</p>
+    </div>
+  </div>
+
+  <!-- Difficulty-level filter (real, tied to Profile > Learning Preferences) -->
+  <div class="quiz-level-banner">
+    <div>
+      <i class="fa-solid fa-sliders"></i>
+      {% if show_all %}
+        {% if difficulty_labels %}
+          Showing quizzes at <strong>all difficulty levels</strong>.
+        {% else %}
+          No difficulty levels selected in your preferences, so showing <strong>all levels</strong>.
+        {% endif %}
+      {% else %}
+        Showing quizzes matched to your selected level{{ difficulty_labels|length|pluralize }}:
+        <strong>{{ difficulty_labels|join:", " }}</strong>.
+      {% endif %}
+    </div>
+    <div class="quiz-level-actions">
+      {% if show_all and difficulty_labels %}
+        <a href="{% url 'quiz' %}" class="btn btn-glass btn-sm">Show My Levels Only</a>
+      {% elif not show_all %}
+        <a href="{% url 'quiz' %}?level=all" class="btn btn-glass btn-sm">Show All Levels</a>
+      {% endif %}
+      <a href="{% url 'profile' %}#learningPrefs" class="btn btn-glass btn-sm">
+        <i class="fa-solid fa-sliders"></i> Change Levels
+      </a>
+    </div>
+  </div>
+
+  <!-- Interest-based filter (real, tied to Profile > Interests) -->
+  <div class="quiz-level-banner">
+    <div>
+      <i class="fa-solid fa-heart"></i>
+      {% if not has_interests %}
+        You haven't added any interests yet, so showing <strong>all topics</strong>.
+      {% elif show_all_interests %}
+        None of your interests matched a specific topic, so showing <strong>all topics</strong>.
+      {% else %}
+        Showing topics matched to your interests: <strong>{{ matched_interest_labels|join:", " }}</strong>.
+      {% endif %}
+    </div>
+    <div class="quiz-level-actions">
+      {% if has_interests and show_all_interests and matched_interest_categories %}
+        <a href="{% url 'quiz' %}" class="btn btn-glass btn-sm">Show My Interests Only</a>
+      {% elif not show_all_interests %}
+        <a href="{% url 'quiz' %}?interests=all" class="btn btn-glass btn-sm">Show All Topics</a>
+      {% endif %}
+      <a href="{% url 'profile' %}#interests" class="btn btn-glass btn-sm">
+        <i class="fa-solid fa-heart"></i> Edit Interests
+      </a>
+    </div>
+  </div>
+
+  <!-- Daily-goal time-budget filter (real, tied to Profile > Daily Goal) -->
+  <div class="quiz-level-banner">
+    <div>
+      <i class="fa-solid fa-clock"></i>
+      {% if goal_status.goal_reached %}
+        Daily goal reached (<strong>{{ goal_status.minutes_completed_today }}/{{ goal_status.goal_minutes }} min</strong>) —
+        showing <strong>all quizzes</strong> regardless of time.
+      {% elif show_all_time %}
+        Showing quizzes at <strong>any length</strong>.
+      {% else %}
+        Showing quizzes that fit your remaining daily goal time: <strong>{{ goal_status.remaining_minutes }} min left</strong>
+        ({{ goal_status.minutes_completed_today }}/{{ goal_status.goal_minutes }} min done today).
+      {% endif %}
+    </div>
+    <div class="quiz-level-actions">
+      {% if not goal_status.goal_reached %}
+        {% if show_all_time %}
+          <a href="{% url 'quiz' %}" class="btn btn-glass btn-sm">Fit My Remaining Time</a>
+        {% else %}
+          <a href="{% url 'quiz' %}?time=all" class="btn btn-glass btn-sm">Show Any Length</a>
+        {% endif %}
+      {% endif %}
+      <a href="{% url 'profile' %}#learningPrefs" class="btn btn-glass btn-sm">
+        <i class="fa-solid fa-clock"></i> Change Daily Goal
+      </a>
+    </div>
+  </div>
+
+  <!-- Quiz Categories -->
+  <div class="quiz-categories" id="quizCategories">
+    <button class="category-chip active" data-category="all">All Topics</button>
+    <button class="category-chip" data-category="performance">Performance</button>
+    <button class="category-chip" data-category="seo">SEO</button>
+    <button class="category-chip" data-category="testing">Testing</button>
+    <button class="category-chip" data-category="nfr">NFR</button>
+    <button class="category-chip" data-category="web">Web Standards</button>
+  </div>
+
+  <!-- Available Quizzes -->
+  <div class="quiz-grid" id="quizGrid">
+    {% for card in quiz_cards %}
+      <div class="quiz-card" id="quiz-{{ card.id }}" data-category="{{ card.category }}"
+           data-difficulty="{{ card.difficulty }}" data-quiz-id="{{ card.id }}"
+           data-quiz-title="{{ card.title }}" data-minutes="{{ card.minutes }}">
+        <div class="quiz-card-header" style="--quiz-accent: {{ card.accent }};">
+          <div class="quiz-difficulty {{ card.difficulty }}">
+            {% if card.difficulty == 'easy' %}Easy{% elif card.difficulty == 'medium' %}Medium{% else %}Hard{% endif %}
+          </div>
+          <i class="fa-solid {{ card.icon }} quiz-card-icon"></i>
+        </div>
+        <div class="quiz-card-body">
+          <h3>{{ card.title }}</h3>
+          <p>{{ card.desc }}</p>
+          <div class="quiz-meta">
+            <span><i class="fa-solid fa-circle-question"></i> {{ card.questions }} Questions</span>
+            <span><i class="fa-solid fa-clock"></i> {{ card.minutes }} min</span>
+          </div>
+          <div class="quiz-progress-bar">
+            <div class="progress-fill" style="width: {{ card.progress }}%;"></div>
+          </div>
+          <span class="quiz-progress-text">
+            {% if card.progress == 100 %}Completed ✓{% elif card.progress == 0 %}Not started{% else %}{{ card.progress }}% completed{% endif %}
+          </span>
+        </div>
+        <div class="quiz-card-footer">
+          {% if card.progress == 100 %}
+            <button class="btn btn-glass btn-sm quiz-start-btn">Retake</button>
+          {% elif card.progress > 0 %}
+            <button class="btn btn-primary btn-sm quiz-start-btn">Continue</button>
+          {% else %}
+            <button class="btn btn-primary btn-sm quiz-start-btn">Start Quiz</button>
+          {% endif %}
+        </div>
+      </div>
+    {% empty %}
+      <div class="quiz-empty-state">
+        <div class="quiz-empty-icon"><i class="fa-solid fa-face-smile"></i></div>
+        <h3>No quizzes match right now</h3>
+        <p>Your difficulty level, interests, or remaining daily-goal time filtered out every quiz. Try loosening one:</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center">
+          <a href="{% url 'quiz' %}?level=all" class="btn btn-primary btn-sm">Show All Levels</a>
+          <a href="{% url 'quiz' %}?interests=all" class="btn btn-primary btn-sm">Show All Topics</a>
+          <a href="{% url 'quiz' %}?time=all" class="btn btn-primary btn-sm">Show Any Length</a>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+
+  <!-- Active Quiz Modal (hidden by default) -->
+  <div class="quiz-modal-overlay" id="quizModalOverlay">
+    <div class="quiz-modal" id="quizModal">
+      <div class="quiz-modal-header">
+        <div class="quiz-timer">
+          <i class="fa-solid fa-clock"></i>
+          <span id="quizTimer">09:45</span>
+        </div>
+        <div class="quiz-progress-info">
+          <span>Question <span id="currentQ">1</span> of <span id="totalQ">15</span></span>
+        </div>
+        <button class="btn-icon" id="closeQuizModal" aria-label="Close Quiz">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="quiz-modal-body">
+        <div class="quiz-question-progress">
+          <div class="q-progress-fill" id="qProgressFill" style="width: 6.67%;"></div>
+        </div>
+
+        <h2 class="quiz-question" id="quizQuestion">What is the output of <code>print(type([]))</code> in Python?</h2>
+
+        <div class="quiz-options" id="quizOptions">
+          <label class="quiz-option" id="optA">
+            <input type="radio" name="quizAnswer" value="A"/>
+            <span class="option-label">A</span>
+            <span class="option-text">&lt;class 'tuple'&gt;</span>
+          </label>
+          <label class="quiz-option" id="optB">
+            <input type="radio" name="quizAnswer" value="B"/>
+            <span class="option-label">B</span>
+            <span class="option-text">&lt;class 'list'&gt;</span>
+          </label>
+          <label class="quiz-option" id="optC">
+            <input type="radio" name="quizAnswer" value="C"/>
+            <span class="option-label">C</span>
+            <span class="option-text">&lt;class 'dict'&gt;</span>
+          </label>
+          <label class="quiz-option" id="optD">
+            <input type="radio" name="quizAnswer" value="D"/>
+            <span class="option-label">D</span>
+            <span class="option-text">&lt;class 'set'&gt;</span>
+          </label>
+        </div>
+
+        <div class="quiz-answer-feedback" id="quizAnswerFeedback" style="display: none;">
+          <div class="quiz-feedback-verdict" id="quizFeedbackVerdict"></div>
+          <p class="quiz-feedback-explanation" id="quizFeedbackExplanation"></p>
+        </div>
+      </div>
+
+      <div class="quiz-modal-footer">
+        <button class="btn btn-glass" id="prevQBtn"><i class="fa-solid fa-arrow-left"></i> Previous</button>
+        <button class="btn btn-primary" id="nextQBtn">Next <i class="fa-solid fa-arrow-right"></i></button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/quiz.css' %}?v=3"/>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/quiz.js' %}?v=4"></script>
+{% endblock %}

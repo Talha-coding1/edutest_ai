@@ -1,0 +1,157 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description" content="EduTest AI – web-based educational chatbot for software testing learning with automated website analysis and feedback."/>
+  <title>{% block title %}EduTest AI{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="stylesheet" href="{% static 'css/main.css' %}?v=5"/>
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+  <script>
+    if (localStorage.getItem('theme') === 'light') {
+      document.body.classList.add('light-mode');
+    }
+  </script>
+
+  <!-- Animated Background -->
+  <div class="bg-orbs">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon">
+        <i class="fa-solid fa-brain"></i>
+      </div>
+      <span class="brand-name">EduTest AI</span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main Menu</div>
+      <a href="{% url 'home' %}" class="nav-item {% block nav_home %}{% endblock %}" id="nav-home">
+        <div class="nav-icon"><i class="fa-solid fa-house"></i></div>
+        <span>Home</span>
+        <div class="nav-indicator"></div>
+      </a>
+      <a href="{% url 'chatbot' %}" class="nav-item {% block nav_chat %}{% endblock %}" id="nav-chat">
+        <div class="nav-icon"><i class="fa-solid fa-robot"></i></div>
+        <span>LLM Tutor</span>
+        <div class="nav-indicator"></div>
+      </a>
+      <a href="{% url 'dashboard' %}" class="nav-item {% block nav_dash %}{% endblock %}" id="nav-dash">
+        <div class="nav-icon"><i class="fa-solid fa-chart-line"></i></div>
+        <span>Learning Dashboard</span>
+        <div class="nav-indicator"></div>
+      </a>
+
+      <div class="nav-section-label">Learning</div>
+      <a href="{% url 'quiz' %}" class="nav-item {% block nav_quiz %}{% endblock %}" id="nav-quiz">
+        <div class="nav-icon"><i class="fa-solid fa-circle-question"></i></div>
+        <span>Quiz</span>
+        <div class="nav-indicator"></div>
+      </a>
+      <a href="{% url 'analysis' %}" class="nav-item {% block nav_analysis %}{% endblock %}" id="nav-analysis">
+        <div class="nav-icon"><i class="fa-solid fa-magnifying-glass-chart"></i></div>
+        <span>Website Analyzer</span>
+        <div class="nav-indicator"></div>
+      </a>
+
+      {% if user.is_authenticated and user.is_staff %}
+        <div class="nav-section-label">Supervisor</div>
+        <a href="{% url 'admin_dashboard' %}" class="nav-item {% block nav_admin %}{% endblock %}" id="nav-admin-panel">
+          <div class="nav-icon"><i class="fa-solid fa-user-shield"></i></div>
+          <span>Admin Panel</span>
+          <div class="nav-indicator"></div>
+        </a>
+      {% endif %}
+
+      <div class="nav-section-label">Account</div>
+      {% if user.is_authenticated %}
+        <a href="{% url 'profile' %}" class="nav-item {% block nav_profile %}{% endblock %}" id="nav-profile">
+          <div class="nav-icon"><i class="fa-solid fa-user-circle"></i></div>
+          <span>Profile</span>
+          <div class="nav-indicator"></div>
+        </a>
+        <a href="{% url 'logout' %}" class="nav-item" id="nav-logout">
+          <div class="nav-icon"><i class="fa-solid fa-right-from-bracket"></i></div>
+          <span>Logout</span>
+          <div class="nav-indicator"></div>
+        </a>
+      {% else %}
+        <a href="{% url 'login' %}" class="nav-item" id="nav-login">
+          <div class="nav-icon"><i class="fa-solid fa-right-to-bracket"></i></div>
+          <span>Log In</span>
+          <div class="nav-indicator"></div>
+        </a>
+        <a href="{% url 'signup' %}" class="nav-item" id="nav-signup">
+          <div class="nav-icon"><i class="fa-solid fa-user-plus"></i></div>
+          <span>Sign Up</span>
+          <div class="nav-indicator"></div>
+        </a>
+      {% endif %}
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="ai-status">
+        <div class="status-dot"></div>
+        <span>Model Ready</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <div class="main-wrapper">
+    <!-- Top Navbar -->
+    <header class="topbar">
+      <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle Sidebar">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+
+      <div class="topbar-right">
+        <button class="topbar-btn" aria-label="Theme Toggle" id="themeToggle">
+          <i class="fa-solid fa-moon"></i>
+        </button>
+        {% if user.is_authenticated %}
+        <a href="{% url 'profile' %}" class="topbar-avatar" id="avatarMenu" aria-label="User Menu" title="{{ user.username }}">
+          <img src="https://ui-avatars.com/api/?name={{ user.username|urlencode }}&background=5b8def&color=fff&size=40" alt="{{ user.username }}"/>
+          <div class="avatar-status"></div>
+        </a>
+        {% else %}
+        <a href="{% url 'login' %}" class="btn btn-primary" style="padding:8px 18px;font-size:13px">
+          Log In
+        </a>
+        {% endif %}
+      </div>
+    </header>
+
+    <!-- Page Content -->
+    <main class="page-content">
+      {% if messages %}
+        <div style="margin-bottom:16px">
+          {% for message in messages %}
+            <div style="padding:10px 16px;border-radius:10px;font-size:13px;margin-bottom:8px;
+                        background:{% if message.tags == 'error' %}rgba(255,92,108,0.1);color:var(--accent-danger)
+                        {% else %}rgba(0,224,161,0.1);color:var(--accent-secondary){% endif %}">
+              {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+
+  <script src="{% static 'js/main.js' %}?v=4"></script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

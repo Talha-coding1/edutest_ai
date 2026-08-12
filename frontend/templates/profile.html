@@ -1,0 +1,295 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}EduTest AI – Profile{% endblock %}
+{% block nav_profile %}active{% endblock %}
+
+{% block content %}
+{{ audit_dates_json|json_script:"audit-dates-data" }}
+<div class="profile-page">
+  <!-- Profile Header -->
+  <div class="profile-hero">
+    <div class="profile-cover">
+      <div class="cover-gradient"></div>
+    </div>
+    <div class="profile-hero-content">
+      <div class="profile-avatar-wrapper">
+        <img src="https://ui-avatars.com/api/?name={{ user.username|urlencode }}&background=6c63ff&color=fff&size=120&font-size=0.4&bold=true" alt="{{ user.username }}" class="profile-avatar" id="profileAvatar"/>
+        <button class="avatar-edit-btn" id="editAvatarBtn" aria-label="Change Avatar">
+          <i class="fa-solid fa-camera"></i>
+        </button>
+      </div>
+      <div class="profile-hero-info">
+        <h1>{{ user.get_full_name|default:user.username }}</h1>
+        <p class="profile-tagline">Software testing learner · EduTest AI enthusiast · {{ total_audits }} website{{ total_audits|pluralize }} analyzed</p>
+        <div class="profile-badges">
+          <span class="profile-badge"><i class="fa-solid fa-bolt"></i> {{ total_xp }} XP</span>
+          <span class="profile-badge"><i class="fa-solid fa-medal"></i> {{ badges_unlocked }} Badge{{ badges_unlocked|pluralize }}</span>
+          <span class="profile-badge"><i class="fa-solid fa-magnifying-glass-chart"></i> {{ total_audits }} Audit{{ total_audits|pluralize }}</span>
+        </div>
+      </div>
+      <button class="btn btn-glass" id="editProfileBtn">
+        <i class="fa-solid fa-pen-to-square"></i> Edit Profile
+      </button>
+    </div>
+  </div>
+
+  {% if messages %}
+    <div style="margin-top:16px">
+      {% for message in messages %}
+        <div style="padding:10px 16px;border-radius:10px;font-size:13px;margin-bottom:8px;
+                    background:{% if message.tags == 'error' %}rgba(255,92,108,0.1);color:var(--accent-danger)
+                    {% else %}rgba(0,224,161,0.1);color:var(--accent-secondary){% endif %}">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <!-- Profile Content -->
+  <div class="profile-content">
+    <!-- Left Column -->
+    <div class="profile-left">
+      <!-- Personal Info -->
+      <div class="profile-card" id="personalInfo">
+        <div class="profile-card-header">
+          <h3><i class="fa-solid fa-user"></i> Personal Information</h3>
+        </div>
+        <div class="profile-card-body" id="personalInfoView">
+          <div class="info-row">
+            <span class="info-label">Full Name</span>
+            <span class="info-value">{{ user.get_full_name|default:"Not set" }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Username</span>
+            <span class="info-value">{{ user.username }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Email</span>
+            <span class="info-value">{{ user.email|default:"Not set" }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Joined</span>
+            <span class="info-value">{{ user.date_joined|date:"F Y" }}</span>
+          </div>
+        </div>
+        <form class="profile-card-body" id="personalInfoForm" method="post" style="display:none">
+          {% csrf_token %}
+          <div class="edit-field">
+            <label for="editFirstName">First Name</label>
+            <input type="text" id="editFirstName" name="first_name" value="{{ user.first_name }}"/>
+          </div>
+          <div class="edit-field">
+            <label for="editLastName">Last Name</label>
+            <input type="text" id="editLastName" name="last_name" value="{{ user.last_name }}"/>
+          </div>
+          <div class="edit-field">
+            <label for="editEmail">Email</label>
+            <input type="email" id="editEmail" name="email" value="{{ user.email }}"/>
+          </div>
+          <div class="edit-field-actions">
+            <button type="submit" class="btn btn-primary btn-sm">Save Changes</button>
+            <button type="button" class="btn btn-glass btn-sm" id="cancelEditBtn">Cancel</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Learning Preferences -->
+      <div class="profile-card" id="learningPrefs">
+        <div class="profile-card-header">
+          <h3><i class="fa-solid fa-sliders"></i> Learning Preferences</h3>
+        </div>
+        <div class="profile-card-body">
+          <div class="pref-item">
+            <span class="pref-label">Learning Style</span>
+            <div class="pref-tags" id="learningStyleTags">
+              <span class="pref-tag {% if learner_profile.learning_style == 'visual' %}active{% endif %}" data-value="visual">Visual</span>
+              <span class="pref-tag {% if learner_profile.learning_style == 'auditory' %}active{% endif %}" data-value="auditory">Auditory</span>
+              <span class="pref-tag {% if learner_profile.learning_style == 'hands_on' %}active{% endif %}" data-value="hands_on">Hands-on</span>
+            </div>
+          </div>
+          <div class="pref-item">
+            <span class="pref-label">Difficulty Level</span>
+            <div class="pref-tags" id="difficultyTags" data-multiselect="true">
+              <span class="pref-tag {% if 'beginner' in learner_profile.difficulty_levels %}active{% endif %}" data-value="beginner">Beginner</span>
+              <span class="pref-tag {% if 'intermediate' in learner_profile.difficulty_levels %}active{% endif %}" data-value="intermediate">Intermediate</span>
+              <span class="pref-tag {% if 'advanced' in learner_profile.difficulty_levels %}active{% endif %}" data-value="advanced">Advanced</span>
+            </div>
+            <small style="display:block;margin-top:8px;font-size:11px;color:var(--text-muted)">
+              Select one, two, or all three — this controls which quizzes show up on your
+              <a href="{% url 'quiz' %}" class="link-styled">Quiz page</a> by default.
+            </small>
+          </div>
+          <div class="pref-item">
+            <span class="pref-label">Daily Goal</span>
+            <div class="daily-goal-slider">
+              <input type="range" min="10" max="120" value="{{ learner_profile.daily_goal_minutes }}" id="dailyGoal"
+                     aria-label="Daily learning goal" {% if goal_status.is_locked %}disabled{% endif %}/>
+              <span class="goal-value"><span id="goalValue">{{ learner_profile.daily_goal_minutes }}</span> min/day</span>
+            </div>
+            <div id="goalStatusNote" style="margin-top:8px;font-size:11px;{% if goal_status.is_locked %}color:var(--accent-warning){% else %}color:var(--accent-secondary){% endif %}">
+              {% if goal_status.is_locked %}
+                <i class="fa-solid fa-lock"></i>
+                Locked — {{ goal_status.minutes_completed_today }}/{{ goal_status.goal_minutes }} min completed today.
+                Finish {{ goal_status.remaining_minutes }} more minute{{ goal_status.remaining_minutes|pluralize }} of quizzes to unlock.
+              {% else %}
+                <i class="fa-solid fa-lock-open"></i>
+                {% if goal_status.minutes_completed_today > 0 %}
+                  Goal reached today ({{ goal_status.minutes_completed_today }}/{{ goal_status.goal_minutes }} min) — you can set a new goal.
+                {% else %}
+                  Pick a goal to lock it in for today — it unlocks automatically once you complete that many quiz minutes.
+                {% endif %}
+              {% endif %}
+            </div>
+          </div>
+          <div class="pref-item">
+            <label class="toggle-switch">
+              <input type="checkbox" checked id="notifToggle"/>
+              <span class="toggle-slider"></span>
+              <span class="toggle-label">Email Notifications</span>
+            </label>
+          </div>
+          <div class="pref-item">
+            <label class="toggle-switch">
+              <input type="checkbox" checked id="reminderToggle"/>
+              <span class="toggle-slider"></span>
+              <span class="toggle-label">Daily Reminders</span>
+            </label>
+          </div>
+          <div id="prefSaveStatus" style="font-size:11px;color:var(--accent-secondary);margin-top:8px;height:14px"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column -->
+    <div class="profile-right">
+      <!-- Stats Overview -->
+      <div class="profile-card" id="statsOverview">
+        <div class="profile-card-header">
+          <h3><i class="fa-solid fa-chart-pie"></i> Stats Overview</h3>
+        </div>
+        <div class="profile-stats-grid">
+          <div class="profile-stat">
+            <span class="stat-num">{{ total_audits }}</span>
+            <span class="stat-desc">Audits Run</span>
+          </div>
+          <div class="profile-stat">
+            <span class="stat-num">{{ total_missions }}</span>
+            <span class="stat-desc">Missions Cleared</span>
+          </div>
+          <div class="profile-stat">
+            <span class="stat-num">{{ avg_score }}%</span>
+            <span class="stat-desc">Avg Score</span>
+          </div>
+          <div class="profile-stat">
+            <span class="stat-num">{{ total_xp }}</span>
+            <span class="stat-desc">Total XP</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Interests -->
+      <div class="profile-card" id="interests">
+        <div class="profile-card-header">
+          <h3><i class="fa-solid fa-heart"></i> Interests</h3>
+        </div>
+        <div class="profile-card-body">
+          <div class="interest-tags" id="interestTags">
+            {% for interest in learner_profile.interests %}
+              <span class="interest-tag" data-interest="{{ interest }}">
+                {{ interest }}
+                <button class="remove-interest" data-interest="{{ interest }}" aria-label="Remove {{ interest }}">
+                  <i class="fa-solid fa-xmark"></i>
+                </button>
+              </span>
+            {% empty %}
+              <span style="font-size:12px;color:var(--text-muted)">No interests added yet.</span>
+            {% endfor %}
+          </div>
+          <div style="margin-top:12px">
+            <select id="interestTopicSelect" class="interest-select">
+              <option value="">+ Add a topic (matches quizzes exactly)</option>
+              {% for topic in interest_topic_choices %}
+                <option value="{{ topic }}">{{ topic }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <small style="display:block;margin-top:10px;font-size:11px;color:var(--text-muted)">
+            Pick a topic above for a guaranteed match on your <a href="{% url 'quiz' %}" class="link-styled">Quiz page</a>.
+          </small>
+        </div>
+      </div>
+
+      <!-- Activity Heatmap -->
+      <div class="profile-card" id="activityHeatmap">
+        <div class="profile-card-header">
+          <h3><i class="fa-solid fa-calendar"></i> Activity Heatmap</h3>
+        </div>
+        <div class="profile-card-body">
+          <div class="heatmap-grid" id="heatmapGrid">
+            <!-- Generated by JS -->
+          </div>
+          <div class="heatmap-legend">
+            <span>Less</span>
+            <div class="heatmap-level" style="background: var(--glass-lighter);"></div>
+            <div class="heatmap-level" style="background: rgba(108,99,255,0.3);"></div>
+            <div class="heatmap-level" style="background: rgba(108,99,255,0.5);"></div>
+            <div class="heatmap-level" style="background: rgba(108,99,255,0.7);"></div>
+            <div class="heatmap-level" style="background: #6c63ff;"></div>
+            <span>More</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/profile.css' %}?v=6"/>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/profile.js' %}?v=7"></script>
+<script>
+/*
+  Smooth-scroll with navbar offset for incoming anchor links.
+  Handles: #learningPrefs  (from "Change Levels" on quiz page)
+           #interests       (from "Edit Interests" on quiz page)
+           #personalInfo    (internal "Edit Profile" button)
+  Offset of 80px accounts for the fixed top navbar height.
+*/
+(function () {
+  const OFFSET = 80; // px — adjust if your navbar height differs
+
+  function scrollToHash(hash) {
+    if (!hash) return;
+    const el = document.querySelector(hash);
+    if (!el) return;
+    const top = el.getBoundingClientRect().top + window.scrollY - OFFSET;
+    window.scrollTo({ top, behavior: 'smooth' });
+
+    // Briefly highlight the target card so the user knows where to look
+    el.style.transition = 'box-shadow .3s ease';
+    el.style.boxShadow  = '0 0 0 3px var(--accent-primary, #00c896)';
+    setTimeout(() => { el.style.boxShadow = ''; }, 1800);
+  }
+
+  // On page load scroll to the hash if present (e.g. arriving from quiz page)
+  if (window.location.hash) {
+    // Small delay lets the page fully render before scrolling
+    setTimeout(() => scrollToHash(window.location.hash), 120);
+  }
+
+  // Also handle any in-page anchor clicks with the same offset
+  document.addEventListener('click', (e) => {
+    const a = e.target.closest('a[href^="#"]');
+    if (!a) return;
+    const hash = a.getAttribute('href');
+    e.preventDefault();
+    history.pushState(null, '', hash);
+    scrollToHash(hash);
+  });
+})();
+</script>
+{% endblock %}

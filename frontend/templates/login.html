@@ -1,0 +1,132 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Log In – EduTest AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="stylesheet" href="{% static 'css/main.css' %}?v=5"/>
+  <link rel="stylesheet" href="{% static 'css/auth.css' %}?v=2"/>
+</head>
+<body>
+  <div class="bg-orbs">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+
+  <div class="auth-page">
+    <!-- Left branding panel -->
+    <div class="auth-brand-panel">
+      <div class="auth-brand-logo">
+        <div class="brand-icon"><i class="fa-solid fa-brain"></i></div>
+        <span>EduTest AI</span>
+      </div>
+      <h2>Pick up right where you <span class="gradient-text">left off</span>.</h2>
+      <p class="brand-sub">Your analyses, XP, levels, and badges are all saved to your account —
+        log in to jump back into your Game Console.</p>
+
+      <div class="auth-feature-list">
+        <div class="auth-feature">
+          <div class="auth-feature-icon"><i class="fa-solid fa-magnifying-glass-chart"></i></div>
+          <div class="auth-feature-text">
+            <strong>Real Website Audits</strong>
+            <span>Crawl any URL and score it with a trained ML model</span>
+          </div>
+        </div>
+        <div class="auth-feature">
+          <div class="auth-feature-icon"><i class="fa-solid fa-gamepad"></i></div>
+          <div class="auth-feature-text">
+            <strong>Gamified Fixes</strong>
+            <span>Turn every issue into a mission — earn XP and level up</span>
+          </div>
+        </div>
+        <div class="auth-feature">
+          <div class="auth-feature-icon"><i class="fa-solid fa-medal"></i></div>
+          <div class="auth-feature-text">
+            <strong>Badges & Progress</strong>
+            <span>Track every audit you've ever run, all in one dashboard</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right form panel -->
+    <div class="auth-form-panel">
+      <div class="auth-card">
+        <div class="auth-brand-mobile">
+          <div class="brand-icon"><i class="fa-solid fa-brain"></i></div>
+          <span>EduTest AI</span>
+        </div>
+
+        <h1>Welcome back</h1>
+        <p class="auth-sub">Log in to pick up your analyses, XP, and badges.</p>
+
+        {% if messages %}
+          <div class="auth-messages">
+            {% for message in messages %}
+              <div class="auth-message {% if message.tags %}{{ message.tags }}{% endif %}">
+                <i class="fa-solid {% if message.tags == 'error' %}fa-circle-exclamation{% else %}fa-circle-check{% endif %}"></i>
+                {{ message }}
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        <form method="post" id="loginForm">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{ next }}"/>
+          <div class="auth-field">
+            <label for="id_username">Username</label>
+            <div class="auth-input-wrap">
+              <span class="field-icon"><i class="fa-solid fa-user"></i></span>
+              <input type="text" id="id_username" name="username" required autofocus autocomplete="username"/>
+            </div>
+          </div>
+          <div class="auth-field">
+            <label for="id_password">Password</label>
+            <div class="auth-input-wrap">
+              <span class="field-icon"><i class="fa-solid fa-lock"></i></span>
+              <input type="password" id="id_password" name="password" required autocomplete="current-password"/>
+              <button type="button" class="auth-toggle-pw" data-target="id_password">
+                <i class="fa-solid fa-eye"></i>
+              </button>
+            </div>
+          </div>
+          <button type="submit" class="auth-submit" id="loginSubmit">
+            <span class="spinner"></span>
+            <span class="btn-label">Log In</span>
+          </button>
+        </form>
+
+        <p class="auth-switch">Don't have an account? <a href="{% url 'signup' %}">Sign up</a></p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.querySelectorAll('.auth-toggle-pw').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var input = document.getElementById(btn.getAttribute('data-target'));
+        var icon = btn.querySelector('i');
+        if (input.type === 'password') {
+          input.type = 'text';
+          icon.className = 'fa-solid fa-eye-slash';
+        } else {
+          input.type = 'password';
+          icon.className = 'fa-solid fa-eye';
+        }
+      });
+    });
+
+    document.getElementById('loginForm').addEventListener('submit', function () {
+      var btn = document.getElementById('loginSubmit');
+      btn.classList.add('loading');
+    });
+  </script>
+</body>
+</html>

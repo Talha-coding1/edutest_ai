@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}EduTest AI – {{ target_user.username }}{% endblock %}
+{% block nav_admin %}active{% endblock %}
+
+{% block content %}
+<div class="dashboard-page">
+  <a href="{% url 'admin_dashboard' %}" class="admin-back-link">
+    <i class="fa-solid fa-arrow-left"></i> Back to Admin Dashboard
+  </a>
+
+  <div class="admin-detail-header">
+    <div>
+      <h1>{{ target_user.username }} <span class="gradient-text">'s Activity</span></h1>
+      <p class="dash-subtitle">{{ target_user.email|default:"No email set" }} · Joined {{ target_user.date_joined|date:"F Y" }}</p>
+    </div>
+  </div>
+
+  {% if messages %}
+    <div style="margin-bottom:16px">
+      {% for message in messages %}
+        <div style="padding:10px 16px;border-radius:10px;font-size:13px;margin-bottom:8px;
+                    background:rgba(0,224,161,0.1);color:var(--accent-secondary)">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <!-- KPIs for this user -->
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-icon" style="--kpi-color: #5b8def;"><i class="fa-solid fa-magnifying-glass-chart"></i></div>
+      <div class="kpi-info">
+        <span class="kpi-value">{{ total_audits }}</span>
+        <span class="kpi-label">Audits Run</span>
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon" style="--kpi-color: #00e0a1;"><i class="fa-solid fa-list-check"></i></div>
+      <div class="kpi-info">
+        <span class="kpi-value">{{ total_missions }}</span>
+        <span class="kpi-label">Missions Cleared</span>
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon" style="--kpi-color: #ffa726;"><i class="fa-solid fa-trophy"></i></div>
+      <div class="kpi-info">
+        <span class="kpi-value">{{ avg_score }}%</span>
+        <span class="kpi-label">Avg SEO Score</span>
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon" style="--kpi-color: #a78bfa;"><i class="fa-solid fa-bolt"></i></div>
+      <div class="kpi-info">
+        <span class="kpi-value">{{ total_xp }}</span>
+        <span class="kpi-label">Total XP</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="admin-detail-grid">
+    <!-- Edit account form -->
+    <div class="dash-panel">
+      <div class="panel-header"><h3>✏️ Edit Account</h3></div>
+      <div style="padding:22px 24px">
+        <form method="post">
+          {% csrf_token %}
+          <div class="edit-field">
+            <label for="firstName">First Name</label>
+            <input type="text" id="firstName" name="first_name" value="{{ target_user.first_name }}"/>
+          </div>
+          <div class="edit-field">
+            <label for="lastName">Last Name</label>
+            <input type="text" id="lastName" name="last_name" value="{{ target_user.last_name }}"/>
+          </div>
+          <div class="edit-field">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" value="{{ target_user.email }}"/>
+          </div>
+          <div class="edit-field">
+            <label>Difficulty Levels (select any combination)</label>
+            {% for value, label in learner_profile.DIFFICULTY_CHOICES %}
+              <div class="admin-status-row" style="padding:6px 0;border:none">
+                <label>
+                  <input type="checkbox" name="difficulty_levels" value="{{ value }}"
+                         {% if value in learner_profile.difficulty_levels %}checked{% endif %}/>
+                  {{ label }}
+                </label>
+              </div>
+            {% endfor %}
+          </div>
+          <div class="admin-status-row">
+            <label>
+              <input type="checkbox" name="is_active" {% if target_user.is_active %}checked{% endif %}/>
+              Account active
+            </label>
+          </div>
+          <div class="edit-field-actions" style="margin-top:16px">
+            <button type="submit" class="btn btn-primary btn-sm">Save Changes</button>
+          </div>
+        </form>
+        <p style="font-size:11px;color:var(--text-muted);margin-top:14px">
+          Need to reset this user's password or change superuser status?
+          Use the <a href="/admin/auth/user/{{ target_user.id }}/change/" class="link-styled" target="_blank">Django admin</a>.
+        </p>
+      </div>
+    </div>
+
+    <!-- Full audit history -->
+    <div class="dash-panel">
+      <div class="panel-header">
+        <h3>🔍 Full Audit History</h3>
+        <span style="font-size:12px;color:var(--text-secondary)">{{ records|length }} total</span>
+      </div>
+      {% if records %}
+        <div class="session-list">
+          {% for record in records %}
+            <a href="{% url 'game_console' record.id %}" target="_blank" rel="noopener" class="session-item" style="cursor:pointer">
+              <div class="session-icon" style="background: rgba(91,141,239,0.15); color: #5b8def;">
+                <i class="fa-solid fa-magnifying-glass-chart"></i>
+              </div>
+              <div class="session-info">
+                <span class="session-title">{{ record.url }}</span>
+                <span class="session-meta">
+                  {{ record.grade }} · {{ record.overall }}% ·
+                  {{ record.completed_count }}/{{ record.total_count }} missions ·
+                  {{ record.total_xp }} XP
+                </span>
+              </div>
+              <span class="session-time">{{ record.created_at|timesince }} ago</span>
+            </a>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="dash-empty-state">
+          <div class="dash-empty-icon"><i class="fa-solid fa-magnifying-glass-chart"></i></div>
+          <h4>No analyses yet</h4>
+          <p>This user hasn't run a website analysis yet.</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}?v=3"/>
+<link rel="stylesheet" href="{% static 'css/profile.css' %}?v=2"/>
+<link rel="stylesheet" href="{% static 'css/admin.css' %}?v=1"/>
+{% endblock %}

@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}EduTest AI – LLM Tutor{% endblock %}
+{% block nav_chat %}active{% endblock %}
+
+{% block content %}
+{% csrf_token %}
+<div class="chat-container">
+  <!-- Chat Sidebar -->
+  <div class="chat-sidebar" id="chatSidebar">
+    <div class="chat-sidebar-header">
+      <h3>Start New Chat</h3>
+      <button class="btn-icon" id="newChatBtn" aria-label="New Chat">
+        <i class="fa-solid fa-pen-to-square"></i>
+      </button>
+    </div>
+
+    <div class="chat-search">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="text" placeholder="Search learning threads..." id="chatSearch"/>
+    </div>
+
+    <div class="chat-history-list" id="chatHistoryList">
+      {% for thread in threads %}
+        <div class="chat-history-item {% if active_thread and thread.id == active_thread.id %}active{% endif %}"
+             id="conv-{{ thread.id }}" data-thread-id="{{ thread.id }}">
+          <div class="conv-icon"><i class="fa-solid fa-brain"></i></div>
+          <div class="conv-details">
+            <span class="conv-title">{{ thread.title }}</span>
+            <span class="conv-preview">{{ thread.messages.last.content|default:"No messages yet"|truncatechars:40 }}</span>
+          </div>
+          <span class="conv-time">{{ thread.updated_at|timesince }}</span>
+          <button class="conv-delete-btn" data-thread-id="{{ thread.id }}" aria-label="Delete thread">
+            <i class="fa-solid fa-trash-can"></i>
+          </button>
+        </div>
+      {% empty %}
+        <div style="padding:20px 16px;font-size:12px;color:var(--text-muted)">
+          No conversations yet — click the compose icon above to start one.
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Chat Main -->
+  <div class="chat-main">
+    <div class="chat-topbar">
+      <button class="btn-icon chat-sidebar-toggle" id="chatSidebarToggle" aria-label="Toggle Chat Sidebar">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+      <div class="chat-topbar-info">
+        <h3 id="chatTopbarTitle">{{ active_thread.title|default:"New Conversation" }}</h3>
+        {% if not llm_configured %}
+          <span class="chat-status" style="color:var(--accent-warning)">
+            <span class="status-dot-sm" style="background:var(--accent-warning)"></span> LLM Tutor not connected — see setup note below
+          </span>
+        {% else %}
+          <span class="chat-status" id="chatStatus" style="display:none">
+            <span class="status-dot-sm"></span> AI is typing...
+          </span>
+        {% endif %}
+      </div>
+      <div class="chat-topbar-actions">
+        <button class="btn-icon" aria-label="Clear Chat" id="clearChatBtn"><i class="fa-solid fa-trash-can"></i></button>
+        <button class="btn-icon" aria-label="Export Chat" id="exportChatBtn"><i class="fa-solid fa-download"></i></button>
+      </div>
+    </div>
+
+    <div class="chat-messages" id="chatMessages" data-active-thread-id="{{ active_thread.id|default:'' }}">
+      {% if active_messages %}
+        {% for msg in active_messages %}
+          <div class="message {% if msg.role == 'user' %}user-message{% else %}ai-message{% endif %}">
+            <div class="message-avatar">
+              {% if msg.role == 'user' %}
+                <img src="https://ui-avatars.com/api/?name={{ user.username|urlencode }}&background=6c63ff&color=fff&size=36" alt="{{ user.username }}"/>
+              {% else %}
+                <div class="ai-avatar-icon"><i class="fa-solid fa-brain"></i></div>
+              {% endif %}
+            </div>
+            <div class="message-content">
+              <div class="message-bubble">{{ msg.content|linebreaksbr }}</div>
+              {% if msg.role == 'assistant' %}
+                <div class="message-actions">
+                  <button class="msg-action-btn" title="Copy"><i class="fa-regular fa-copy"></i></button>
+                </div>
+              {% endif %}
+              <span class="message-time">{{ msg.created_at|time:"g:i A" }}</span>
+            </div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <!-- Welcome Message -->
+        <div class="chat-welcome">
+          <div class="welcome-icon">
+            <i class="fa-solid fa-robot"></i>
+          </div>
+          <h2>Hello! I'm <span class="gradient-text">EduTest AI</span></h2>
+          <p>I help you learn software testing with context-aware explanations and practical website analysis guidance.</p>
+          {% if not llm_configured %}
+            <p style="font-size:12px;color:var(--accent-warning);max-width:420px">
+              <i class="fa-solid fa-triangle-exclamation"></i>
+              The LLM Tutor isn't connected yet on this server — no <code>ANTHROPIC_API_KEY</code> is set.
+              You can still send a message, but you'll get a setup notice instead of a real answer until that's configured.
+            </p>
+          {% endif %}
+          <div class="quick-prompts">
+            <button class="prompt-chip" data-prompt="Explain website performance testing in simple terms">
+              <i class="fa-solid fa-lightbulb"></i> Explain performance testing
+            </button>
+            <button class="prompt-chip" data-prompt="What SEO checks should I run before deployment?">
+              <i class="fa-solid fa-code"></i> SEO checks list
+            </button>
+            <button class="prompt-chip" data-prompt="How do non-functional requirements relate to website quality?">
+              <i class="fa-solid fa-database"></i> NFR mapping
+            </button>
+            <button class="prompt-chip" data-prompt="Generate practice questions for web testing concepts">
+              <i class="fa-solid fa-circle-question"></i> Quiz me
+            </button>
+          </div>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Chat Input -->
+    <div class="chat-input-area">
+      <div class="chat-input-wrapper">
+        <textarea id="chatInput" placeholder="Ask about testing concepts, performance, SEO, or submit findings..." rows="1" aria-label="Chat message input"></textarea>
+        <button class="send-btn" id="sendBtn" aria-label="Send Message">
+          <i class="fa-solid fa-paper-plane"></i>
+        </button>
+      </div>
+      <p class="chat-disclaimer">EduTest AI can make mistakes. Verify critical testing decisions.</p>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/chatbot.css' %}?v=4"/>
+{% endblock %}
+
+{% block extra_js %}
+<script>window.CURRENT_USERNAME = "{{ user.username|escapejs }}";</script>
+<script src="{% static 'js/chatbot.js' %}?v=4"></script>
+{% endblock %}

@@ -1,0 +1,71 @@
+/* ============================================
+   EduTest AI – Game Console CTA banner
+   (shown on the analysis page after a successful audit)
+   ============================================ */
+
+.console-cta {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--glass-border);
+  background: var(--gradient-surface);
+  padding: 2px;
+}
+
+.console-cta-glow {
+  position: absolute;
+  inset: -60%;
+  background: conic-gradient(from 0deg, #5b8def, #a78bfa, #00e0a1, #5b8def);
+  animation: ctaSpin 8s linear infinite;
+  opacity: 0.14;
+  filter: blur(30px);
+}
+
+@keyframes ctaSpin {
+  to { transform: rotate(360deg); }
+}
+
+.console-cta-content {
+  position: relative;
+  background: var(--bg-secondary);
+  border-radius: calc(var(--radius-lg) - 2px);
+  padding: 26px 28px;
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  flex-wrap: wrap;
+}
+
+.console-cta-icon {
+  font-size: 42px;
+  filter: drop-shadow(0 0 12px rgba(91, 141, 239, 0.5));
+  animation: ctaFloat 2.4s ease-in-out infinite;
+}
+
+@keyframes ctaFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+.console-cta-text {
+  flex: 1;
+  min-width: 220px;
+}
+
+.console-cta-text h3 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 19px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.console-cta-text p {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.console-cta-btn {
+  white-space: nowrap;
+  box-shadow: 0 0 24px rgba(91, 141, 239, 0.35);
+}

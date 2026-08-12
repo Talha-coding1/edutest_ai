@@ -1,0 +1,21 @@
+# Python
+*.pyc
+__pycache__/
+*.pyo
+venv/
+.venv/
+env/
+
+# Django
+*.sqlite3
+db.sqlite3
+
+# Environment — NEVER commit your API keys
+.env
+
+# OS
+.DS_Store
+Thumbs.db
+
+# VS Code
+.vscode/

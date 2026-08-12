@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}EduTest AI – Admin Dashboard{% endblock %}
+{% block nav_admin %}active{% endblock %}
+
+{% block content %}
+<div class="dashboard-page">
+  <div class="dash-header">
+    <div>
+      <h1>Supervisor <span class="gradient-text">Dashboard</span></h1>
+      <p class="dash-subtitle">Every registered learner and their real activity — audits run, scores, XP, and missions cleared</p>
+    </div>
+  </div>
+
+  <!-- Site-wide KPIs -->
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-icon" style="--kpi-color: #5b8def;"><i class="fa-solid fa-users"></i></div>
+      <div class="kpi-info">
+        <span class="kpi-value">{{ site_stats.total_users }}</span>
+        <span class="kpi-label">Registered Users</span>
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon" style="--kpi-color: #00e0a1;"><i class="fa-solid fa-magnifying-glass-chart"></i></div>
+      <div class="kpi-info">
+        <span class="kpi-value">{{ site_stats.total_audits }}</span>
+        <span class="kpi-label">Total Audits Run</span>
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon" style="--kpi-color: #a78bfa;"><i class="fa-solid fa-bolt"></i></div>
+      <div class="kpi-info">
+        <span class="kpi-value">{{ site_stats.total_xp }}</span>
+        <span class="kpi-label">Total XP Earned (all users)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- User table -->
+  <div class="dash-panel">
+    <div class="panel-header">
+      <h3>👥 All Users</h3>
+      <span style="font-size:12px;color:var(--text-secondary)">{{ user_rows|length }} accounts</span>
+    </div>
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Role</th>
+            <th>Audits Run</th>
+            <th>Avg Score</th>
+            <th>Total XP</th>
+            <th>Last Audit</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in user_rows %}
+            <tr>
+              <td>
+                <div class="admin-user-cell">
+                  <div class="admin-user-avatar">{{ row.user.username|slice:":2"|upper }}</div>
+                  <div>
+                    <div class="admin-user-name">{{ row.user.username }}</div>
+                    <div class="admin-user-email">{{ row.user.email|default:"No email set" }}</div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                {% if row.user.is_superuser %}
+                  <span class="admin-badge staff">Superuser</span>
+                {% elif row.user.is_staff %}
+                  <span class="admin-badge staff">Staff</span>
+                {% else %}
+                  <span style="color:var(--text-muted);font-size:12px">Learner</span>
+                {% endif %}
+                {% if not row.user.is_active %}
+                  <span class="admin-badge inactive">Disabled</span>
+                {% endif %}
+              </td>
+              <td>{{ row.total_audits }}</td>
+              <td>{% if row.total_audits %}{{ row.avg_score }}%{% else %}—{% endif %}</td>
+              <td>{{ row.total_xp }}</td>
+              <td>
+                {% if row.last_audit %}
+                  {{ row.last_audit.created_at|timesince }} ago
+                {% else %}
+                  <span style="color:var(--text-muted)">Never</span>
+                {% endif %}
+              </td>
+              <td>
+                <a href="{% url 'admin_user_detail' row.user.id %}" class="btn btn-glass btn-sm">
+                  View Details
+                </a>
+              </td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="7" class="admin-empty-cell">No users registered yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}?v=3"/>
+<link rel="stylesheet" href="{% static 'css/admin.css' %}?v=1"/>
+{% endblock %}

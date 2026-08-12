@@ -1,0 +1,149 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sign Up – EduTest AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="stylesheet" href="{% static 'css/main.css' %}?v=5"/>
+  <link rel="stylesheet" href="{% static 'css/auth.css' %}?v=2"/>
+</head>
+<body>
+  <div class="bg-orbs">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+
+  <div class="auth-page">
+    <!-- Left branding panel -->
+    <div class="auth-brand-panel">
+      <div class="auth-brand-logo">
+        <div class="brand-icon"><i class="fa-solid fa-brain"></i></div>
+        <span>EduTest AI</span>
+      </div>
+      <h2>Turn SEO fixes into a <span class="gradient-text">game you win</span>.</h2>
+      <p class="brand-sub">Create an account and every analysis, XP point, and badge
+        you earn is saved permanently — visible only to you.</p>
+
+      <div class="auth-feature-list">
+        <div class="auth-feature">
+          <div class="auth-feature-icon"><i class="fa-solid fa-user-shield"></i></div>
+          <div class="auth-feature-text">
+            <strong>Your Own Record</strong>
+            <span>Every audit you run is private to your account</span>
+          </div>
+        </div>
+        <div class="auth-feature">
+          <div class="auth-feature-icon"><i class="fa-solid fa-chart-line"></i></div>
+          <div class="auth-feature-text">
+            <strong>Track Real Progress</strong>
+            <span>See your XP, level, and cleared missions on your dashboard</span>
+          </div>
+        </div>
+        <div class="auth-feature">
+          <div class="auth-feature-icon"><i class="fa-solid fa-bolt"></i></div>
+          <div class="auth-feature-text">
+            <strong>Free & Instant</strong>
+            <span>No email verification — start analyzing in seconds</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right form panel -->
+    <div class="auth-form-panel">
+      <div class="auth-card">
+        <div class="auth-brand-mobile">
+          <div class="brand-icon"><i class="fa-solid fa-brain"></i></div>
+          <span>EduTest AI</span>
+        </div>
+
+        <h1>Create your account</h1>
+        <p class="auth-sub">Every analysis, XP point, and badge you earn is saved to your own account.</p>
+
+        {% if messages %}
+          <div class="auth-messages">
+            {% for message in messages %}
+              <div class="auth-message {% if message.tags %}{{ message.tags }}{% endif %}">
+                <i class="fa-solid {% if message.tags == 'error' %}fa-circle-exclamation{% else %}fa-circle-check{% endif %}"></i>
+                {{ message }}
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        <form method="post" id="signupForm">
+          {% csrf_token %}
+          <div class="auth-field">
+            <label for="id_username">Username</label>
+            <div class="auth-input-wrap">
+              <span class="field-icon"><i class="fa-solid fa-user"></i></span>
+              <input type="text" id="id_username" name="username" required autofocus autocomplete="username"/>
+            </div>
+          </div>
+          <div class="auth-field">
+            <label for="id_email">Email</label>
+            <div class="auth-input-wrap">
+              <span class="field-icon"><i class="fa-solid fa-envelope"></i></span>
+              <input type="email" id="id_email" name="email" autocomplete="email"/>
+            </div>
+          </div>
+          <div class="auth-field">
+            <label for="id_password1">Password</label>
+            <div class="auth-input-wrap">
+              <span class="field-icon"><i class="fa-solid fa-lock"></i></span>
+              <input type="password" id="id_password1" name="password1" required autocomplete="new-password"/>
+              <button type="button" class="auth-toggle-pw" data-target="id_password1">
+                <i class="fa-solid fa-eye"></i>
+              </button>
+            </div>
+            <small>At least 8 characters. Avoid common passwords.</small>
+          </div>
+          <div class="auth-field">
+            <label for="id_password2">Confirm Password</label>
+            <div class="auth-input-wrap">
+              <span class="field-icon"><i class="fa-solid fa-lock"></i></span>
+              <input type="password" id="id_password2" name="password2" required autocomplete="new-password"/>
+              <button type="button" class="auth-toggle-pw" data-target="id_password2">
+                <i class="fa-solid fa-eye"></i>
+              </button>
+            </div>
+          </div>
+          <button type="submit" class="auth-submit" id="signupSubmit">
+            <span class="spinner"></span>
+            <span class="btn-label">Create Account</span>
+          </button>
+        </form>
+
+        <p class="auth-switch">Already have an account? <a href="{% url 'login' %}">Log in</a></p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.querySelectorAll('.auth-toggle-pw').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var input = document.getElementById(btn.getAttribute('data-target'));
+        var icon = btn.querySelector('i');
+        if (input.type === 'password') {
+          input.type = 'text';
+          icon.className = 'fa-solid fa-eye-slash';
+        } else {
+          input.type = 'password';
+          icon.className = 'fa-solid fa-eye';
+        }
+      });
+    });
+
+    document.getElementById('signupForm').addEventListener('submit', function () {
+      var btn = document.getElementById('signupSubmit');
+      btn.classList.add('loading');
+    });
+  </script>
+</body>
+</html>

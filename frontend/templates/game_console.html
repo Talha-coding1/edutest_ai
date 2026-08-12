@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}EduTest AI – Game Console{% endblock %}
+{% block nav_analysis %}active{% endblock %}
+
+{% block content %}
+{% csrf_token %}
+<div class="console-page">
+
+  {% if not has_game %}
+    <div class="console-empty">
+      <div class="empty-icon">🕹️</div>
+      <h2>No Active Mission</h2>
+      <p>Run a website analysis first — every issue it finds becomes a live mission here,
+         with XP, levels, and badges to earn.</p>
+      <a href="{% url 'analysis' %}" class="btn btn-primary">
+        <i class="fa-solid fa-magnifying-glass"></i> Go to Analysis
+      </a>
+    </div>
+
+  {% else %}
+    {{ game_payload|json_script:"game-data" }}
+
+    {% if viewing_as_staff %}
+      <div class="staff-view-banner">
+        <i class="fa-solid fa-user-shield"></i>
+        Viewing <strong>{{ record_owner.username }}</strong>'s mission board as supervisor — read-only.
+      </div>
+    {% endif %}
+
+    <div class="hud-topbar">
+      <div>
+        <div class="hud-title">🎮 Game Console</div>
+        <div class="hud-url" id="hudUrl"></div>
+      </div>
+      <div class="hud-actions">
+        <a href="{% url 'analysis' %}" class="hud-icon-btn" title="Back to Analysis">
+          <i class="fa-solid fa-arrow-left"></i>
+        </a>
+        {% if not viewing_as_staff %}
+          <button class="hud-icon-btn" id="resetConsoleBtn" title="Reset Progress">
+            <i class="fa-solid fa-rotate-left"></i>
+          </button>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Player HUD card -->
+    <div class="player-card">
+      <div class="level-ring-wrap" id="levelRingWrap">
+        <svg viewBox="0 0 118 118">
+          <circle class="level-ring-bg" cx="59" cy="59" r="50"></circle>
+          <circle class="level-ring-fill" id="levelRingFill" cx="59" cy="59" r="50"></circle>
+        </svg>
+        <div class="level-ring-icon" id="levelRingIcon">🥉</div>
+      </div>
+
+      <div class="player-info">
+        <div class="player-level-name" id="playerLevelName">Beginner</div>
+        <div class="player-level-sub" id="playerLevelSub">0 XP earned</div>
+        <div class="xp-bar-track"><div class="xp-bar-fill" id="xpBarFill" style="width:0%"></div></div>
+        <div class="xp-bar-labels">
+          <span id="xpBarCurrent">0 XP</span>
+          <span id="xpBarNext">Next level at 100 XP</span>
+        </div>
+      </div>
+
+      <div class="mission-progress-ring-wrap">
+        <svg viewBox="0 0 100 100">
+          <circle class="mp-ring-bg" cx="50" cy="50" r="42"></circle>
+          <circle class="mp-ring-fill" id="mpRingFill" cx="50" cy="50" r="42"></circle>
+        </svg>
+        <div class="mp-ring-label" id="mpRingLabel">0/0</div>
+      </div>
+      <div class="mp-ring-caption">Missions Cleared</div>
+    </div>
+
+    <!-- Badge vault -->
+    <div class="vault-header">
+      <h3>🏅 Badge Vault</h3>
+    </div>
+    <div class="badge-vault" id="badgeVault"></div>
+
+    <!-- Mission log -->
+    <div class="mission-log-header">
+      <h3>📋 Mission Log</h3>
+    </div>
+    <div class="mission-log" id="missionLog"></div>
+  {% endif %}
+
+  <!-- Overlays -->
+  <div class="hud-overlay" id="levelUpOverlay">
+    <div class="hud-overlay-card">
+      <div class="hud-overlay-ring"></div>
+      <div class="hud-overlay-ring"></div>
+      <div class="overlay-emoji" id="levelUpIcon">🚀</div>
+      <div class="overlay-title">LEVEL UP!</div>
+      <div class="overlay-sub" id="levelUpText">You've reached a new rank.</div>
+      <button class="btn btn-primary" onclick="document.getElementById('levelUpOverlay').classList.remove('show')">
+        Continue
+      </button>
+    </div>
+  </div>
+
+  <div class="hud-overlay" id="badgeOverlay">
+    <div class="hud-overlay-card">
+      <div class="overlay-emoji" id="badgeOverlayIcon">🏅</div>
+      <div class="overlay-title">BADGE UNLOCKED</div>
+      <div class="overlay-sub" id="badgeOverlayText"></div>
+      <button class="btn btn-primary" onclick="document.getElementById('badgeOverlay').classList.remove('show')">
+        Nice!
+      </button>
+    </div>
+  </div>
+
+  <div class="hud-overlay" id="victoryOverlay">
+    <div class="hud-overlay-card">
+      <div class="hud-overlay-ring"></div>
+      <div class="overlay-emoji">🏆</div>
+      <div class="overlay-title">SITE FULLY OPTIMIZED</div>
+      <div class="overlay-sub">Every detected issue on this page has been fixed. Great work!</div>
+      <a href="{% url 'analysis' %}" class="btn btn-primary">Return to Analysis</a>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/game_console.css' %}?v=1"/>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/game_console.js' %}?v=1"></script>
+{% endblock %}

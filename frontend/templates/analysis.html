@@ -1,0 +1,249 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}EduTest AI – Website Analyzer{% endblock %}
+{% block nav_analysis %}active{% endblock %}
+
+{% block content %}
+{% csrf_token %}
+<div class="analysis-page">
+  <!-- Analysis Header -->
+  <div class="analysis-header">
+    <div>
+      <h1>Website <span class="gradient-text">Analysis</span></h1>
+      <p>Evaluate submitted URLs and connect findings with software testing concepts</p>
+    </div>
+    <div class="analysis-actions">
+      <input type="text" id="urlInput" class="url-input"
+             placeholder="https://example.com"
+             style="padding:.6rem 1rem;border-radius:8px;border:1px solid rgba(255,255,255,.15);
+                    background:rgba(255,255,255,.05);color:inherit;min-width:260px;margin-right:.5rem" />
+      <button class="btn btn-primary" id="submitUrlBtn">
+        <i class="fa-solid fa-link"></i> <span id="submitUrlBtnText">Submit URL</span>
+      </button>
+      <button class="btn btn-glass" id="exportReportBtn">
+        <i class="fa-solid fa-file-export"></i> Export Report
+      </button>
+    </div>
+  </div>
+
+  <div id="analysisStatus" style="display:none;margin-bottom:1rem;font-size:13px;"></div>
+
+  <!-- Issues / Recommendations from the live audit (populated by JS) -->
+  <div class="recommendations-section" id="liveIssuesSection" style="display:none">
+    <div class="section-header">
+      <h3>Live Audit <span class="gradient-text">Findings</span></h3>
+    </div>
+    <div class="reco-grid" id="liveIssuesGrid"></div>
+  </div>
+
+  <!-- Game Console CTA: the gamified Virtual Web Console now lives on its
+       own immersive page (opens in a new tab) so it doesn't compete for
+       space with the audit results. -->
+  <div class="console-cta" id="consoleCtaSection" style="display:none">
+    <div class="console-cta-glow"></div>
+    <div class="console-cta-content">
+      <div class="console-cta-icon">🎮</div>
+      <div class="console-cta-text">
+        <h3>Your Mission Board is Ready</h3>
+        <p id="consoleCtaSub">Every issue we just found has been turned into a live mission — earn XP,
+          level up, and unlock badges by fixing them for real.</p>
+      </div>
+      <a href="{% url 'game_console_latest' %}" target="_blank" rel="noopener"
+         class="btn btn-primary console-cta-btn" id="openConsoleBtn">
+        <i class="fa-solid fa-gamepad"></i> Open Game Console
+      </a>
+    </div>
+  </div>
+
+
+  <!-- Summary Cards -->
+  <div class="analysis-summary">
+    <div class="summary-card" id="summaryAccuracy">
+      <div class="summary-ring">
+        <svg viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="42" class="ring-bg"/>
+          <circle cx="50" cy="50" r="42" class="ring-fill" style="--progress: 88; --color: #6c63ff;" />
+        </svg>
+        <span class="ring-value">88%</span>
+      </div>
+      <span class="summary-label">Performance Score</span>
+    </div>
+    <div class="summary-card" id="summarySpeed">
+      <div class="summary-ring">
+        <svg viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="42" class="ring-bg"/>
+          <circle cx="50" cy="50" r="42" class="ring-fill" style="--progress: 72; --color: #00d4aa;" />
+        </svg>
+        <span class="ring-value">76%</span>
+      </div>
+      <span class="summary-label">SEO Score</span>
+    </div>
+    <div class="summary-card" id="summaryConsistency">
+      <div class="summary-ring">
+        <svg viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="42" class="ring-bg"/>
+          <circle cx="50" cy="50" r="42" class="ring-fill" style="--progress: 95; --color: #ff6b6b;" />
+        </svg>
+        <span class="ring-value">91%</span>
+      </div>
+      <span class="summary-label">Accessibility Health</span>
+    </div>
+    <div class="summary-card" id="summaryEngagement">
+      <div class="summary-ring">
+        <svg viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="42" class="ring-bg"/>
+          <circle cx="50" cy="50" r="42" class="ring-fill" style="--progress: 80; --color: #ffa726;" />
+        </svg>
+        <span class="ring-value">84%</span>
+      </div>
+      <span class="summary-label">Best Practices</span>
+    </div>
+  </div>
+
+  <!-- Charts Section -->
+  {{ score_trend_buckets_json|json_script:"score-trend-buckets-data" }}
+  {{ category_averages_json|json_script:"category-averages-data" }}
+  <div class="analysis-charts">
+    {% if has_audit_history %}
+      <div class="chart-card wide" id="progressChartCard">
+        <div class="chart-header">
+          <h3>Recent URL Test Trend</h3>
+          <div class="chart-tabs">
+            <button class="chart-tab active" data-range="week">Week</button>
+            <button class="chart-tab" data-range="month">Month</button>
+            <button class="chart-tab" data-range="year">Year</button>
+          </div>
+        </div>
+        <div class="chart-body">
+          <canvas id="progressChart" height="300"></canvas>
+        </div>
+      </div>
+
+      <div class="chart-card" id="strengthChartCard">
+        <div class="chart-header">
+          <h3>SEO Category Coverage</h3>
+        </div>
+        <div class="chart-body">
+          <canvas id="radarChart" height="300"></canvas>
+        </div>
+      </div>
+    {% else %}
+      <div class="chart-card wide dash-empty-state" style="grid-column: 1 / -1">
+        <div class="dash-empty-icon"><i class="fa-solid fa-chart-line"></i></div>
+        <h4>No trend data yet</h4>
+        <p>Run a few website analyses and your real score trend and SEO category coverage will show up here.</p>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Skills Breakdown -->
+  <div class="skills-section">
+    <div class="section-header">
+      <h3>Issue Breakdown by Concept</h3>
+    </div>
+    <div class="skills-list">
+      <div class="skill-row">
+        <div class="skill-info">
+          <span class="skill-name">Load Time Optimization</span>
+          <span class="skill-percent">92%</span>
+        </div>
+        <div class="skill-bar">
+          <div class="skill-fill" style="width: 92%; --bar-color: #6c63ff;"></div>
+        </div>
+      </div>
+      <div class="skill-row">
+        <div class="skill-info">
+          <span class="skill-name">Technical SEO Structure</span>
+          <span class="skill-percent">78%</span>
+        </div>
+        <div class="skill-bar">
+          <div class="skill-fill" style="width: 78%; --bar-color: #ff6b6b;"></div>
+        </div>
+      </div>
+      <div class="skill-row">
+        <div class="skill-info">
+          <span class="skill-name">Caching Strategy</span>
+          <span class="skill-percent">85%</span>
+        </div>
+        <div class="skill-bar">
+          <div class="skill-fill" style="width: 85%; --bar-color: #00d4aa;"></div>
+        </div>
+      </div>
+      <div class="skill-row">
+        <div class="skill-info">
+          <span class="skill-name">Image and Asset Delivery</span>
+          <span class="skill-percent">70%</span>
+        </div>
+        <div class="skill-bar">
+          <div class="skill-fill" style="width: 70%; --bar-color: #ffa726;"></div>
+        </div>
+      </div>
+      <div class="skill-row">
+        <div class="skill-info">
+          <span class="skill-name">Mobile Responsiveness</span>
+          <span class="skill-percent">88%</span>
+        </div>
+        <div class="skill-bar">
+          <div class="skill-fill" style="width: 88%; --bar-color: #e040fb;"></div>
+        </div>
+      </div>
+      <div class="skill-row">
+        <div class="skill-info">
+          <span class="skill-name">Metadata and Indexability</span>
+          <span class="skill-percent">65%</span>
+        </div>
+        <div class="skill-bar">
+          <div class="skill-fill" style="width: 65%; --bar-color: #29b6f6;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recommendations -->
+  <div class="recommendations-section">
+    <div class="section-header">
+      <h3>Educational <span class="gradient-text">Recommendations</span></h3>
+    </div>
+    <div class="reco-grid">
+      <div class="reco-card">
+        <div class="reco-icon" style="color: #ffa726;">
+          <i class="fa-solid fa-lightbulb"></i>
+        </div>
+        <div class="reco-content">
+          <h4>Prioritize LCP and CLS Fixes</h4>
+          <p>Review large media delivery and layout shifts first, then map each fix to performance testing criteria.</p>
+        </div>
+      </div>
+      <div class="reco-card">
+        <div class="reco-icon" style="color: #00d4aa;">
+          <i class="fa-solid fa-bullseye"></i>
+        </div>
+        <div class="reco-content">
+          <h4>Strengthen On-Page SEO Validation</h4>
+          <p>Create a checklist for title tags, heading hierarchy, and meta descriptions before each test cycle.</p>
+        </div>
+      </div>
+      <div class="reco-card">
+        <div class="reco-icon" style="color: #6c63ff;">
+          <i class="fa-solid fa-clock-rotate-left"></i>
+        </div>
+        <div class="reco-content">
+          <h4>Link Results to NFR Concepts</h4>
+          <p>Use each analyzer issue to explain performance, reliability, and usability requirements in class discussion.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/analysis.css' %}?v=3"/>
+<link rel="stylesheet" href="{% static 'css/console_cta.css' %}?v=1"/>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="{% static 'js/analysis.js' %}?v=4"></script>
+{% endblock %}

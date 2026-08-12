@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}EduTest AI – Home{% endblock %}
+{% block nav_home %}active{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+  <div class="hero-content">
+    <div class="hero-badge">
+      <i class="fa-solid fa-sparkles"></i>
+      <span>Educational Testing Assistant</span>
+    </div>
+    <h1 class="hero-title">
+      Learn Software Testing with
+      <span class="gradient-text">LLM-Guided Practice</span>
+    </h1>
+    <p class="hero-subtitle">
+      EduTest AI combines conversational learning, automated website evaluation, and
+      progress tracking so students can connect software testing theory with practical outcomes.
+    </p>
+    <div class="hero-actions">
+      <a href="{% url 'chatbot' %}" class="btn btn-primary btn-lg" id="startChatBtn">
+        <i class="fa-solid fa-message-bot"></i>
+        Start LLM Tutor
+      </a>
+      <a href="{% url 'analysis' %}" class="btn btn-glass btn-lg" id="analyzeWebsiteBtn">
+        <i class="fa-solid fa-globe"></i>
+        Analyze Website
+      </a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat-item">
+        <span class="stat-number" data-count="{{ site_stats.websites_tested }}">0</span>
+        <span class="stat-label">Websites Tested</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-number" data-count="{{ site_stats.missions_completed }}">0</span>
+        <span class="stat-label">Missions Completed</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-number" data-count="{{ site_stats.registered_learners }}">0</span>
+        <span class="stat-label">Registered Learners</span>
+      </div>
+    </div>
+  </div>
+  <div class="hero-visual">
+    <div class="ai-sphere">
+      <div class="sphere-ring ring-1"></div>
+      <div class="sphere-ring ring-2"></div>
+      <div class="sphere-ring ring-3"></div>
+      <div class="sphere-core">
+        <i class="fa-solid fa-brain"></i>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Features Grid -->
+<section class="section-block">
+  <div class="section-header">
+    <h2 class="section-title">Core <span class="gradient-text">Modules</span></h2>
+    <p class="section-subtitle">Designed around your methodology: architecture, LLM tutoring, and automated testing</p>
+  </div>
+
+  <div class="features-grid">
+    <a href="{% url 'chatbot' %}" class="feature-card" id="featureChatbot">
+      <div class="feature-icon" style="--accent: #6c63ff;">
+        <i class="fa-solid fa-robot"></i>
+      </div>
+      <h3>Conversational LLM Tutor</h3>
+      <p>Context-aware explanations of testing concepts with adaptive answers to learner questions.</p>
+      <div class="feature-arrow">
+        <i class="fa-solid fa-arrow-right"></i>
+      </div>
+    </a>
+
+    <a href="{% url 'dashboard' %}" class="feature-card" id="featureDashboard">
+      <div class="feature-icon" style="--accent: #00d4aa;">
+        <i class="fa-solid fa-chart-line"></i>
+      </div>
+      <h3>Learning Dashboard</h3>
+      <p>Monitor progress, completion trends, and readiness across performance and SEO topics.</p>
+      <div class="feature-arrow">
+        <i class="fa-solid fa-arrow-right"></i>
+      </div>
+    </a>
+
+    <a href="{% url 'quiz' %}" class="feature-card" id="featureQuiz">
+      <div class="feature-icon" style="--accent: #ff6b6b;">
+        <i class="fa-solid fa-circle-question"></i>
+      </div>
+      <h3>Gamified Practice</h3>
+      <p>Reinforce concepts through quizzes, milestones, and achievement-based engagement loops.</p>
+      <div class="feature-arrow">
+        <i class="fa-solid fa-arrow-right"></i>
+      </div>
+    </a>
+
+    <a href="{% url 'analysis' %}" class="feature-card" id="featureAnalysis">
+      <div class="feature-icon" style="--accent: #ffa726;">
+        <i class="fa-solid fa-magnifying-glass-chart"></i>
+      </div>
+      <h3>Automated Website Testing</h3>
+      <p>Submit URLs for Performance and SEO analysis and map findings to testing principles.</p>
+      <div class="feature-arrow">
+        <i class="fa-solid fa-arrow-right"></i>
+      </div>
+    </a>
+  </div>
+</section>
+
+<!-- Recent Activity -->
+<section class="section-block">
+  <div class="section-header">
+    <h2 class="section-title">Methodology <span class="gradient-text">Flow</span></h2>
+  </div>
+  <div class="activity-timeline">
+    <div class="timeline-item">
+      <div class="timeline-dot" style="background: #6c63ff;"></div>
+      <div class="timeline-card">
+        <div class="timeline-meta">
+          <i class="fa-solid fa-diagram-project"></i>
+          <span>Step 1: System Architecture Design</span>
+          <time>Foundation</time>
+        </div>
+        <p>Define the interaction flow between UI, chatbot engine, website analyzer, and gamification layer.</p>
+      </div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-dot" style="background: #ff6b6b;"></div>
+      <div class="timeline-card">
+        <div class="timeline-meta">
+          <i class="fa-solid fa-robot"></i>
+          <span>Step 2: Transformer-Based LLM Module</span>
+          <time>Interaction</time>
+        </div>
+        <p>Provide dynamic, context-aware tutoring and flexible responses beyond fixed intent rules.</p>
+      </div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-dot" style="background: #00d4aa;"></div>
+      <div class="timeline-card">
+        <div class="timeline-meta">
+          <i class="fa-solid fa-globe"></i>
+          <span>Step 3: Automated Website Testing</span>
+          <time>Application</time>
+        </div>
+        <p>Analyze URL performance and SEO, then explain each issue using relevant testing concepts.</p>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/home.js' %}?v=2"></script>
+{% endblock %}

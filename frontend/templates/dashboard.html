@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}EduTest AI – Learning Dashboard{% endblock %}
+{% block nav_dash %}active{% endblock %}
+
+{% block content %}
+{{ score_trend_json|json_script:"score-trend-data" }}
+{{ category_averages_json|json_script:"category-averages-data" }}
+<div class="dashboard-page">
+  <!-- Dashboard Header -->
+  <div class="dash-header">
+    <div>
+      <h1>Welcome back, <span class="gradient-text">{{ user.first_name|default:user.username }}</span> 👋</h1>
+      <p class="dash-subtitle">Your real website-analysis activity — every number below comes from audits you've actually run</p>
+    </div>
+    <div class="dash-header-actions">
+      <a href="{% url 'analysis' %}" class="btn btn-primary">
+        <i class="fa-solid fa-magnifying-glass-chart"></i> Run New Analysis
+      </a>
+    </div>
+  </div>
+
+  <!-- KPI Cards (real) -->
+  <div class="kpi-grid">
+    <div class="kpi-card" id="kpiAudits">
+      <div class="kpi-icon" style="--kpi-color: #5b8def;">
+        <i class="fa-solid fa-magnifying-glass-chart"></i>
+      </div>
+      <div class="kpi-info">
+        <span class="kpi-value">{{ total_audits }}</span>
+        <span class="kpi-label">Audits Run</span>
+      </div>
+    </div>
+
+    <div class="kpi-card" id="kpiMissions">
+      <div class="kpi-icon" style="--kpi-color: #00e0a1;">
+        <i class="fa-solid fa-list-check"></i>
+      </div>
+      <div class="kpi-info">
+        <span class="kpi-value">{{ total_missions }}/{{ total_possible_missions }}</span>
+        <span class="kpi-label">Missions Cleared</span>
+      </div>
+    </div>
+
+    <div class="kpi-card" id="kpiScore">
+      <div class="kpi-icon" style="--kpi-color: #ffa726;">
+        <i class="fa-solid fa-trophy"></i>
+      </div>
+      <div class="kpi-info">
+        <span class="kpi-value">{{ avg_score }}%</span>
+        <span class="kpi-label">Avg SEO Score</span>
+      </div>
+    </div>
+
+    <div class="kpi-card" id="kpiXp">
+      <div class="kpi-icon" style="--kpi-color: #a78bfa;">
+        <i class="fa-solid fa-bolt"></i>
+      </div>
+      <div class="kpi-info">
+        <span class="kpi-value">{{ total_xp }}</span>
+        <span class="kpi-label">Total XP Earned</span>
+      </div>
+    </div>
+  </div>
+
+  {% if total_audits > 0 %}
+  <!-- Charts Row (real) -->
+  <div class="charts-row">
+    <div class="chart-card wide" id="activityChartCard">
+      <div class="chart-header">
+        <h3>SEO Score Trend</h3>
+        <div class="chart-legend">
+          <span class="legend-item"><span class="legend-dot" style="background:#5b8def;"></span> Overall Score</span>
+        </div>
+      </div>
+      <div class="chart-body">
+        <canvas id="activityChart" height="280"></canvas>
+      </div>
+    </div>
+
+    <div class="chart-card" id="topicsChartCard">
+      <div class="chart-header">
+        <h3>Category Performance</h3>
+      </div>
+      <div class="chart-body">
+        <canvas id="topicsChart" height="280"></canvas>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Bottom Section -->
+  <div class="dash-bottom-row">
+    <!-- Recent Activity (real) -->
+    <div class="dash-panel" id="recentSessions">
+      <div class="panel-header">
+        <h3>🔍 Recent Website Analyses</h3>
+        <a href="{% url 'analysis' %}" class="link-styled">Run New Analysis</a>
+      </div>
+      {% if recent_records %}
+        <div class="session-list">
+          {% for record in recent_records %}
+            <a href="{% url 'game_console' record.id %}" target="_blank" rel="noopener" class="session-item" style="cursor:pointer">
+              <div class="session-icon" style="background: rgba(91,141,239,0.15); color: #5b8def;">
+                <i class="fa-solid fa-magnifying-glass-chart"></i>
+              </div>
+              <div class="session-info">
+                <span class="session-title">{{ record.url }}</span>
+                <span class="session-meta">
+                  {{ record.grade }} · {{ record.overall }}% ·
+                  {{ record.completed_count }}/{{ record.total_count }} missions ·
+                  {{ record.total_xp }} XP
+                </span>
+              </div>
+              <span class="session-time">{{ record.created_at|timesince }} ago</span>
+            </a>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="dash-empty-state">
+          <div class="dash-empty-icon"><i class="fa-solid fa-magnifying-glass-chart"></i></div>
+          <h4>No analyses yet</h4>
+          <p>Run your first website analysis to start earning XP, unlocking badges, and tracking your real progress here.</p>
+          <a href="{% url 'analysis' %}" class="btn btn-primary btn-sm">
+            <i class="fa-solid fa-play"></i> Run Your First Analysis
+          </a>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Badge Vault (real) -->
+    <div class="dash-panel" id="achievements">
+      <div class="panel-header">
+        <h3>🏅 Badge Vault</h3>
+        <span style="font-size:12px;color:var(--text-secondary)">{{ badges_earned_count }}/{{ badges_with_status|length }} unlocked</span>
+      </div>
+      <div class="achievements-grid">
+        {% for badge in badges_with_status %}
+          <div class="achievement-badge {% if badge.earned %}unlocked{% else %}locked{% endif %}" title="{{ badge.desc }}">
+            <div class="badge-icon">{{ badge.icon }}</div>
+            <span>{{ badge.name }}</span>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}?v=3"/>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="{% static 'js/dashboard.js' %}?v=3"></script>
+{% endblock %}
