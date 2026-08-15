@@ -78,14 +78,16 @@ Instead of reading passive documentation, users engage directly with an interact
 Follow the following step to clone the project on your local machine.
 
 ### 1. Clone the Repository
-```bash
+
 git clone [https://github.com/Talha-coding1/edutest_ai.git](https://github.com/Talha-coding1/edutest_ai.git)
+
 
 ### 👨‍💻 Developer & Internship Information
 
 * **Developer:** Muhammad Talha
 * **Role:** AI Engineer Intern
 * **Supervisor / Trainer:** Mr. Said Rahman sb
+* **Email:** saidrahman@gmail.com
 * **Organization:** Crown Software House & Computer Institute
 * **Location:** Mingora, Swat, Khyber Pakhtunkhwa, Pakistan
 * **GitHub Profile:** [@Talha-coding1](https://github.com/Talha-coding1)
