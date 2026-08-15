@@ -81,6 +81,7 @@ Follow the following step to clone the project on your local machine.
 
 git clone [https://github.com/Talha-coding1/edutest_ai.git](https://github.com/Talha-coding1/edutest_ai.git)
 
+---
 
 ### 👨‍💻 Developer & Internship Information
 
