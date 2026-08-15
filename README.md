@@ -83,7 +83,7 @@ git clone [https://github.com/Talha-coding1/edutest_ai.git](https://github.com/T
 
 ---
 
-### 👨‍💻 Developer & Internship Information
+## 👨‍💻 Developer & Internship Information
 
 * **Developer:** Muhammad Talha
 * **Role:** AI Engineer Intern
@@ -95,6 +95,6 @@ git clone [https://github.com/Talha-coding1/edutest_ai.git](https://github.com/T
 
 ---
 
-### 📄 License & Usage
+## 📄 License & Usage
 
 This software is developed and maintained for professional portfolio demonstration, software engineering evaluation, and instructional technology implementation under **Crown Software House & Computer Institute**.
