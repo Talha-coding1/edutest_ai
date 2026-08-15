@@ -88,7 +88,7 @@ git clone [https://github.com/Talha-coding1/edutest_ai.git](https://github.com/T
 * **Developer:** Muhammad Talha
 * **Role:** AI Engineer Intern
 * **Supervisor / Trainer:** Mr. Said Rahman sb
-* **Email:** saidrahman@gmail.com
+* **Email:** saidrahman714@gmail.com
 * **Organization:** Crown Software House & Computer Institute
 * **Location:** Mingora, Swat, Khyber Pakhtunkhwa, Pakistan
 * **GitHub Profile:** [@Talha-coding1](https://github.com/Talha-coding1)
